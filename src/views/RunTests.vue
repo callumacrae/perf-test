@@ -78,6 +78,7 @@ export default {
           return new Promise((resolve, reject) => {
             const resultObj: ResultObj = { name: test.name, status: 'running' };
             this.testResults.push(resultObj);
+            // Leave a pause to give the DOM time to update
             setTimeout(() => {
               try {
                 resultObj.result = this.runTest(testJs, test.code);
@@ -87,7 +88,7 @@ export default {
                 resultObj.status = 'error';
                 reject(err);
               }
-            });
+            }, 100);
           });
         });
       }
@@ -135,6 +136,12 @@ export default {
         return 0;
       }
       return (100 / this.maxPerSecond) * result.result.perSecond;
+    },
+    heightChange() {
+      setTimeout(() => {
+        const height = this.$el.getBoundingClientRect().height;
+        window.parent.postMessage(`new-height ${height}`, '*');
+      });
     }
   },
   computed: {
@@ -148,10 +155,13 @@ export default {
     testResults: {
       deep: true,
       handler() {
-        setTimeout(() => {
-          const height = this.$el.getBoundingClientRect().height;
-          window.parent.postMessage(`new-height ${height}`, '*');
-        });
+        this.heightChange();
+      }
+    },
+    status: {
+      deep: true,
+      handler() {
+        this.heightChange();
       }
     }
   }
