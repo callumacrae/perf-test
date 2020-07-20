@@ -118,7 +118,7 @@ export default {
       if (!result || !result.perSecond) {
         return '';
       }
-      return result.perSecond + ' runs/s';
+      return result.perSecond.toLocaleString() + ' runs/s';
     },
     barWidth(result: ResultObj): number {
       if (!result.result) {
