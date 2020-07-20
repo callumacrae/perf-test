@@ -3,8 +3,7 @@
     <!-- TODO: this doesn't work for script tags -->
     <div v-html="formData.setupHtml"></div>
 
-    <!-- the key here is to work around a reactivity issue -->
-    <table :key="status">
+    <table>
       <tbody>
         <tr v-for="(result, i) in testResults" :key="i">
           <th class="text-right pr-2 whitespace-no-wrap">{{ result.name }}:</th>
@@ -76,8 +75,8 @@ export default {
       for (const test of tests) {
         promise = promise.then(() => {
           return new Promise((resolve, reject) => {
-            const resultObj: ResultObj = { name: test.name, status: 'running' };
-            this.testResults.push(resultObj);
+            this.testResults.push({ name: test.name, status: 'running' });
+            const resultObj = this.testResults[this.testResults.length - 1];
             // Leave a pause to give the DOM time to update
             setTimeout(() => {
               try {
@@ -136,12 +135,6 @@ export default {
         return 0;
       }
       return (100 / this.maxPerSecond) * result.result.perSecond;
-    },
-    heightChange() {
-      setTimeout(() => {
-        const height = this.$el.getBoundingClientRect().height;
-        window.parent.postMessage(`new-height ${height}`, '*');
-      });
     }
   },
   computed: {
@@ -155,13 +148,8 @@ export default {
     testResults: {
       deep: true,
       handler() {
-        this.heightChange();
-      }
-    },
-    status: {
-      deep: true,
-      handler() {
-        this.heightChange();
+        const height = this.$el.getBoundingClientRect().height;
+        window.parent.postMessage(`new-height ${height}`, '*');
       }
     }
   }
