@@ -104,7 +104,7 @@ export default {
 
       let runs = 0;
       let totalTime = 0;
-      const MAX_RUNS = 1e3; // @TODO INCREASE
+      const MAX_RUNS = 1e6;
       const MAX_TIME = 5e3;
 
       for (; runs < MAX_RUNS && totalTime < MAX_TIME; runs++) {
