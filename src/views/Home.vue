@@ -4,7 +4,8 @@
       <h1 class="text-2xl mb-2">Performance checker</h1>
       <p class="text-gray-600">
         A simple client-side tool by
-        <a href="http://macr.ae/">Callum Macrae</a>.
+        <a href="http://macr.ae/">Callum Macrae</a>. Source
+        <a href="https://github.com/callumacrae/perf-test">on GitHub</a>.
       </p>
     </div>
 
