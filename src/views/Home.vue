@@ -117,7 +117,7 @@
         <iframe
           v-if="status === 'running'"
           class="w-full"
-          :src="`/run-tests?testData=${runData}`"
+          :src="`/run-tests?testData=${encodeURIComponent(runData)}`"
           :key="iframeKey"
         ></iframe>
       </div>
@@ -133,11 +133,8 @@ export default {
   components: {
     CodeInput
   },
-  data: () => ({
-    status: '',
-    runData: '',
-    iframeKey: 0,
-    formData: {
+  data() {
+    let formData = {
       setupHtml: '',
       setupJs: '',
       testJs: '',
@@ -145,8 +142,26 @@ export default {
         { name: '', code: '' },
         { name: '', code: '' }
       ]
+    };
+
+    // @ts-ignore
+    if (this.$route.query.testData) {
+      try {
+        // @ts-ignore
+        formData = JSON.parse(this.$route.query.testData);
+        console.log(formData)
+      } catch (err) {
+        console.error(err);
+      }
     }
-  }),
+
+    return {
+      status: '',
+      runData: '',
+      iframeKey: 0,
+      formData
+    };
+  },
   methods: {
     deleteTest(index: number): void {
       this.formData.tests.splice(index, 1);
@@ -155,16 +170,29 @@ export default {
       this.formData.tests.splice(index, 0, { name: '', code: '' });
     },
     runTests(): void {
+      this.formData.tests = this.formData.tests.filter(
+        test => test.name || test.code
+      );
+
+      // @TODO add error handling
+      if (!this.formData.tests.length) {
+        this.formData.tests = [{ name: '', code: '' }];
+        return;
+      }
+
       this.status = 'running';
       this.runData = this.dataUrl;
 
       // So that we can run multiple times with same data
       this.iframeKey++;
+
+      // @ts-ignore
+      this.$router.push({ query: { testData: this.dataUrl } });
     }
   },
   computed: {
     dataUrl(): string {
-      return encodeURIComponent(JSON.stringify(this.formData));
+      return JSON.stringify(this.formData);
     }
   }
 };
