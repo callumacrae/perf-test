@@ -30,7 +30,7 @@
 <script lang="ts">
 import { nextTick } from 'vue';
 
-type Status = 'running' | 'done';
+type Status = 'running' | 'done' | 'error';
 interface DataType {
   status: Status;
   formData: {
@@ -75,21 +75,31 @@ export default {
 
       for (const test of tests) {
         promise = promise.then(() => {
-          return new Promise(resolve => {
+          return new Promise((resolve, reject) => {
             const resultObj: ResultObj = { name: test.name, status: 'running' };
             this.testResults.push(resultObj);
             setTimeout(() => {
-              resultObj.result = this.runTest(testJs, test.code);
-              resultObj.status = 'done';
-              resolve();
+              try {
+                resultObj.result = this.runTest(testJs, test.code);
+                resultObj.status = 'done';
+                resolve();
+              } catch (err) {
+                resultObj.status = 'error';
+                reject(err);
+              }
             });
           });
         });
       }
 
-      promise.then(() => {
-        this.status = 'done';
-      });
+      promise
+        .then(() => {
+          this.status = 'done';
+        })
+        .catch(err => {
+          this.status = 'error';
+          console.error(err);
+        });
     },
     runTest(setupCode: string, testCode: string): ResultData {
       const runTest = new Function(`
