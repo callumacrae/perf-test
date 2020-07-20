@@ -118,8 +118,15 @@
           v-if="status === 'running'"
           class="w-full"
           :src="`/run-tests?testData=${encodeURIComponent(runData)}`"
+          :style="{ height: `${formData.tests.length * 50}px` }"
           :key="iframeKey"
         ></iframe>
+
+        <p class="mt-4">
+          Please note that this tool isn't that accurate (try running the same
+          code in multiple tests!), and is best used for finding significant
+          differences in simple code. It is no substitute for proper benchmarks.
+        </p>
       </div>
     </fieldset>
   </div>
@@ -149,7 +156,6 @@ export default {
       try {
         // @ts-ignore
         formData = JSON.parse(this.$route.query.testData);
-        console.log(formData)
       } catch (err) {
         console.error(err);
       }

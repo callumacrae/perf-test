@@ -2,19 +2,28 @@
   <div>
     <!-- TODO: this doesn't work for script tags -->
     <div v-html="formData.setupHtml"></div>
-    <p>
-      <strong>status:</strong>
-      {{ status }}
-    </p>
 
-    <ul>
-      <li v-for="(result, i) in testResults" :key="i">
-        <strong>{{ result.name }}:</strong>
-        {{
-          result.status === 'done' ? formatResult(result.result) : result.status
-        }}
-      </li>
-    </ul>
+    <!-- the key here is to work around a reactivity issue -->
+    <table :key="status">
+      <tbody>
+        <tr v-for="(result, i) in testResults" :key="i">
+          <th class="text-right pr-2 whitespace-no-wrap">{{ result.name }}:</th>
+          <td class="w-full">
+            <div
+              v-if="result.status === 'done'"
+              :class="
+                `h-8 my-1 bg-${barWidth(result) < 80 ? 'red' : 'green'}-500`
+              "
+              :style="{ width: `${barWidth(result)}%` }"
+            ></div>
+            <span v-else>{{ result.status }}</span>
+          </td>
+          <td class="whitespace-no-wrap pl-2">
+            {{ formatResult(result.result) }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
@@ -43,6 +52,7 @@ interface ResultData {
   totalTime: number;
   runs: number;
   average: number;
+  perSecond: number;
 }
 
 export default {
@@ -101,13 +111,27 @@ export default {
         totalTime += runTest();
       }
 
-      return { totalTime, runs, average: totalTime / runs };
+      const average = totalTime / runs;
+      return { totalTime, runs, average, perSecond: Math.round(1e3 / average) };
     },
     formatResult(result: ResultData): string {
-      if (!result || !result.average) {
+      if (!result || !result.perSecond) {
         return '';
       }
-      return Math.round(1e3 / result.average) + ' runs per second';
+      return result.perSecond + ' runs/s';
+    },
+    barWidth(result: ResultObj): number {
+      if (!result.result) {
+        return 0;
+      }
+      return (100 / this.maxPerSecond) * result.result.perSecond;
+    }
+  },
+  computed: {
+    maxPerSecond(): number {
+      return Math.max(
+        ...this.testResults.map(({ result }) => (result ? result.perSecond : 0))
+      );
     }
   }
 };
