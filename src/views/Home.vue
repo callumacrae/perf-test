@@ -118,7 +118,7 @@
         <iframe
           v-if="status === 'running'"
           class="w-full"
-          :src="`/run-tests?testData=${encodeURIComponent(runData)}`"
+          :src="`/run-tests?testData=${runData}`"
           :style="{ height: `${iframeHeight}px` }"
           :key="iframeKey"
         ></iframe>
@@ -156,7 +156,7 @@ export default {
     if (this.$route.query.testData) {
       try {
         // @ts-ignore
-        formData = JSON.parse(this.$route.query.testData);
+        formData = JSON.parse(decodeURIComponent(this.$route.query.testData));
       } catch (err) {
         console.error(err);
       }
@@ -218,7 +218,7 @@ export default {
   },
   computed: {
     dataUrl(): string {
-      return JSON.stringify(this.formData);
+      return encodeURIComponent(JSON.stringify(this.formData));
     }
   }
 };
