@@ -118,11 +118,11 @@
           v-if="status === 'running'"
           class="w-full"
           :src="`/run-tests?testData=${encodeURIComponent(runData)}`"
-          :style="{ height: `${formData.tests.length * 50}px` }"
+          :style="{ height: `${iframeHeight}px` }"
           :key="iframeKey"
         ></iframe>
 
-        <p class="mt-4">
+        <p v-if="status === 'running'">
           Please note that this tool isn't that accurate (try running the same
           code in multiple tests!), and is best used for finding significant
           differences in simple code. It is no substitute for proper benchmarks.
@@ -165,15 +165,22 @@ export default {
       status: '',
       runData: '',
       iframeKey: 0,
+      iframeHeight: 100,
       formData
     };
+  },
+  mounted() {
+    window.addEventListener('message', this.handleMessage);
+  },
+  beforeUnmount() {
+    window.removeEventListener('message', this.handleMessage);
   },
   methods: {
     deleteTest(index: number): void {
       this.formData.tests.splice(index, 1);
     },
     newTestAfter(index: number): void {
-      this.formData.tests.splice(index, 0, { name: '', code: '' });
+      this.formData.tests.splice(index + 1, 0, { name: '', code: '' });
     },
     runTests(): void {
       this.formData.tests = this.formData.tests.filter(
@@ -194,6 +201,18 @@ export default {
 
       // @ts-ignore
       this.$router.push({ query: { testData: this.dataUrl } });
+    },
+    handleMessage(e: MessageEvent): void {
+      const data = e.data;
+
+      if (typeof data === 'string' && data.startsWith('new-height ')) {
+        const height = data.slice(11);
+        try {
+          this.iframeHeight = Number(height);
+        } catch (err) {
+          console.error('Invalid number', err);
+        }
+      }
     }
   },
   computed: {

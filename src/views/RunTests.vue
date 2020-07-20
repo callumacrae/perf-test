@@ -104,7 +104,7 @@ export default {
 
       let runs = 0;
       let totalTime = 0;
-      const MAX_RUNS = 1e6;
+      const MAX_RUNS = 1e3; // @TODO INCREASE
       const MAX_TIME = 5e3;
 
       for (; runs < MAX_RUNS && totalTime < MAX_TIME; runs++) {
@@ -132,6 +132,17 @@ export default {
       return Math.max(
         ...this.testResults.map(({ result }) => (result ? result.perSecond : 0))
       );
+    }
+  },
+  watch: {
+    testResults: {
+      deep: true,
+      handler() {
+        setTimeout(() => {
+          const height = this.$el.getBoundingClientRect().height;
+          window.parent.postMessage(`new-height ${height}`, '*');
+        });
+      }
     }
   }
 };
